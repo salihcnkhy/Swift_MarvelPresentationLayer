@@ -11,22 +11,27 @@ import Combine
 import SwiftUI
 
 public protocol CharacterListViewModelProtocol {
-    func getCharacterList(assign: inout Published<CharacterListModel>.Publisher)
+    func getCharacterList()
 }
 
-public final class CharacterListViewModel: CharacterListViewModelProtocol {
+public final class CharacterListViewModel: BaseViewModel, CharacterListViewModelProtocol {
     
+    
+    private var anyCancellables = Set<AnyCancellable>()
     private let characterListPublisher: CharacterListUseCasePublisher
     
     public init(characterListPublisher: CharacterListUseCasePublisher) {
         self.characterListPublisher = characterListPublisher
     }
     
-    public func getCharacterList(assign: inout Published<CharacterListModel>.Publisher) {
+    public func getCharacterList() {
         characterListPublisher
-            .setRequest(.init())
-            .compactMap { characterListResponse in CharacterListModel() }
-            .eraseToAnyPublisher()
-            .assign(to: &assign)
+            .setRequest(.init(offset: 0, limit: 10))
+            .sink { completion in
+                print(completion)
+            } receiveValue: { listResponse in
+                print(listResponse)
+            }
+            .store(in: &anyCancellables)
     }
 }
