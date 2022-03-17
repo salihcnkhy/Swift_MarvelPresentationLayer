@@ -11,26 +11,29 @@ import Combine
 import SwiftUI
 
 public protocol CharacterListViewModelProtocol {
-    func getCharacterList()
+    func getCharacterList(callback: @escaping ([MarvelCharacterDataResponse]) -> Void)
 }
 
 public final class CharacterListViewModel: BaseViewModel, CharacterListViewModelProtocol {
     
-    
     private var anyCancellables = Set<AnyCancellable>()
-    private let characterListPublisher: CharacterListUseCasePublisher
+    private let characterListPublisher: CharacterListUseCaseProtocol
     
-    public init(characterListPublisher: CharacterListUseCasePublisher) {
+    private var characterListOffset = 0
+    
+    public init(characterListPublisher: CharacterListUseCaseProtocol) {
         self.characterListPublisher = characterListPublisher
     }
     
-    public func getCharacterList() {
+    public func getCharacterList(callback: @escaping ([MarvelCharacterDataResponse]) -> Void) {
         characterListPublisher
-            .setRequest(.init(offset: 0, limit: 10))
+            .publish(request: .init(offset: characterListOffset, limit: 10))
             .sink { completion in
-                print(completion)
-            } receiveValue: { listResponse in
-                print(listResponse)
+                //print(completion)
+            } receiveValue: { [weak self] listResponse in
+                //print(listResponse)
+                callback(listResponse.data.results)
+                self?.characterListOffset += 10
             }
             .store(in: &anyCancellables)
     }

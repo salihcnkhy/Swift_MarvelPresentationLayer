@@ -8,5 +8,7 @@
 import PresentationLayerBase
 
 public final class CharacterListCoordinator: BaseCoordinator<CharacterListViewModelProtocol, CharacterListRouterProtocol, CharacterListPresenterProtocol> {
-    
+    public override func start() {
+        viewController = CharacterListViewController(viewModel: viewModel, router: router, presenter: presenter)
+    }
 }
