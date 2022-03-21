@@ -18,8 +18,9 @@ public struct MarvelCharacterImageData: Hashable {
     public let pathExtension: MarvelCharacterImagePathExtension
     public let variantName: MarvelCharacherImageVariant
     
-    public func createUrlString() -> String {
-        "\(path)/\(variantName.rawValue).\(pathExtension)"
+    public func createPathString() -> String {
+        let actualPath = path.split(separator: "/").dropFirst(7).joined(separator: "/")
+        return "\(actualPath)/\(variantName.rawValue).\(pathExtension)"
     }
 }
 

@@ -11,7 +11,9 @@ import UIKit
 
 public struct SearchBarPresenter { }
 
-final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarPresenter> {
+public enum SearchBarEvent { }
+
+final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarEvent, SearchBarPresenter> {
     
     private var cancelables = Set<AnyCancellable>()
     private var lastTextOfSearchBar: String? = nil

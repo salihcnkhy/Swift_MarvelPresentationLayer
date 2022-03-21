@@ -13,6 +13,8 @@ import SwiftUI
 public protocol CharacterListViewModelProtocol {
     func subscribeCharacterList(with closure: @escaping ([MarvelCharacterData]) -> Void)
     func getCharacterList(with searchText: String?, resetOffset: Bool)
+    
+    func getNetworkImageUseCase() -> NetworkImageUseCaseProtocol
 }
 
 public final class CharacterListViewModel: BaseViewModel, CharacterListViewModelProtocol {
@@ -23,11 +25,13 @@ public final class CharacterListViewModel: BaseViewModel, CharacterListViewModel
     private var characterListOffset = 0
     
     @Published private var marvelCharacterList = [MarvelCharacterData]()
+    
     private let characterListUseCase: CharacterListUseCaseProtocol
+    private let networkImageUseCase: NetworkImageUseCaseProtocol
     
-    
-    public init(characterListPublisher: CharacterListUseCaseProtocol) {
+    public init(characterListPublisher: CharacterListUseCaseProtocol, networkImageUseCase: NetworkImageUseCaseProtocol) {
         self.characterListUseCase = characterListPublisher
+        self.networkImageUseCase = networkImageUseCase
     }
     
     public func subscribeCharacterList(with closure: @escaping ([MarvelCharacterData]) -> Void) {
@@ -35,6 +39,11 @@ public final class CharacterListViewModel: BaseViewModel, CharacterListViewModel
     }
     
     public func getCharacterList(with searchText: String?, resetOffset: Bool) {
+        if resetOffset {
+            characterListOffset = 0
+        }
+        
+        print(characterListOffset)
         characterListUseCase
             .publish(request: .init(offset: characterListOffset, limit: fetchLimitCount, nameStartsWith: searchText))
             .format(CharacterListFormatter())
@@ -42,14 +51,13 @@ public final class CharacterListViewModel: BaseViewModel, CharacterListViewModel
                 print(completion)
             } receiveValue: { [weak self] model in
                 guard let self = self else { return }
-                if resetOffset {
-                    self.characterListOffset = 0
-                } else {
-                    self.characterListOffset += self.fetchLimitCount
-                }
-                
+                self.characterListOffset += self.fetchLimitCount
                 self.marvelCharacterList = model
             }.store(in: &anyCancellables)
+    }
+    
+    public func getNetworkImageUseCase() -> NetworkImageUseCaseProtocol {
+        networkImageUseCase
     }
 }
 

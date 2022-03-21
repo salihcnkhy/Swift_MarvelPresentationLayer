@@ -21,7 +21,11 @@ public enum CollectionViewState<SectionType: Hashable & CaseIterable, DataType: 
     case onDeleteSections([Section])
 }
 
-open class CollectionView<SectionType: CaseIterable & Hashable, DataType: Hashable>: ViewComponent<CollectionViewState<SectionType, DataType>, CollectionViewPresenter> {
+public enum CollectionViewEvent {
+    
+}
+
+open class CollectionView<SectionType: CaseIterable & Hashable, DataType: Hashable>: ViewComponent<CollectionViewState<SectionType, DataType>, CollectionViewEvent, CollectionViewPresenter> {
     typealias Section = SectionType
     
     public var model: [DataType] = []

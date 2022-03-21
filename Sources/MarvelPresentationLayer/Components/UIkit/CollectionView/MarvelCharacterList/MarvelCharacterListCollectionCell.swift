@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 import Swiftlities
+import MarvelDomainLayer
 
 final class MarvelCharacterListCollectionCell: UICollectionViewCell, ReusableCellProtocol {
     static let reusableID: String = "MarvelCharacterListCollectionCell"
@@ -83,9 +84,9 @@ final class MarvelCharacterListCollectionCell: UICollectionViewCell, ReusableCel
         favoriteIcon.setContentHuggingPriority(.defaultHigh, for: .vertical)
     }
     
-    func configure(with model: MarvelCharacterData) {
+    func configure(with model: MarvelCharacterData, and networkImageUseCase: NetworkImageUseCaseProtocol) {
         nameLabel.text = model.name
-        characterImage.stateSubject.send(.init(id: model.id, url: model.image.createUrlString()))
-        print(model.image.createUrlString())
+        characterImage.networkImageUseCase = networkImageUseCase
+        characterImage.stateSubject.send(.load(.init(id: model.id, path: model.image.createPathString())))
     }
 }

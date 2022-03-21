@@ -8,8 +8,5 @@
 import UIKit
 
 public protocol ReusableCellProtocol {
-    associatedtype CellModel
-
     static var reusableID: String { get }
-    func configure(with model: CellModel)
 }

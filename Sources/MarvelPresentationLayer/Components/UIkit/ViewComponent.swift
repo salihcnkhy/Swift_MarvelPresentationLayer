@@ -8,8 +8,9 @@
 import UIKit
 import Combine
 
-open class ViewComponent<ComponentState, ComponentPresenter>: UIView {
+open class ViewComponent<ComponentState, ComponentEvent, ComponentPresenter>: UIView {
     var stateSubject = PassthroughSubject<ComponentState, Never>()
+    var eventSubject = PassthroughSubject<ComponentEvent, Never>()
     
     var presenter: ComponentPresenter
     private var anyCancellables = Set<AnyCancellable>()
@@ -19,9 +20,10 @@ open class ViewComponent<ComponentState, ComponentPresenter>: UIView {
         super.init(frame: frame)
         setupView()
         
-        stateSubject.sink { [weak self] state in
-            self?.updateView(with: state)
-        }.store(in: &anyCancellables)
+        stateSubject
+            .sink { [weak self] state in
+                self?.updateView(with: state)
+            }.store(in: &anyCancellables)
         
         if let state = state {
             self.stateSubject.send(state)

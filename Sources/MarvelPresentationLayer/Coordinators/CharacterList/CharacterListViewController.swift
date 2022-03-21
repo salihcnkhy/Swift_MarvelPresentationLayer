@@ -20,6 +20,7 @@ public final class CharacterListViewController: BaseViewController<CharacterList
     
     private lazy var characterCollectionView: MarvelCharacterListCollectionView = {
         let temp = MarvelCharacterListCollectionView(presenter: presenter.characterCollectionViewPresenter)
+        temp.networkImageUseCase = viewModel.getNetworkImageUseCase()
         temp.translatesAutoresizingMaskIntoConstraints = false
         return temp
     }()
