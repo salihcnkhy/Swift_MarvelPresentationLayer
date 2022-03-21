@@ -13,31 +13,12 @@ import MarvelDomainLayer
 public final class MarvelCharacterListCollectionView: CollectionView<MarvelCharacterListCollectionViewSection, MarvelCharacterData> {
     
     public override func registerCells(_ collectionView: UICollectionView) {
-        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
+        collectionView.register(MarvelCharacterListCollectionCell.self, forCellWithReuseIdentifier: MarvelCharacterListCollectionCell.reusableID)
     }
     
     public override func cellProvider(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ itemIdentifier: MarvelCharacterData) -> UICollectionViewCell? {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath)
-        print(indexPath)
-        let label = UILabel()
-        label.numberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.fill(in: cell.contentView)
-        cell.backgroundColor = .blue
-        label.text = self.model[indexPath.row].name
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MarvelCharacterListCollectionCell.reusableID, for: indexPath) as! MarvelCharacterListCollectionCell
+        cell.configure(with: model[indexPath.row])
         return cell
-    }
-    
-    public override func reloadData(with model: [MarvelCharacterData]) {
-        for section in MarvelCharacterListCollectionViewSection.allCases {
-            snapshot.appendItems(model, toSection: section)
-        }
-        
-        dataSource?.apply(snapshot)
-    }
-    
-    public override func addSections() {
-        snapshot.appendSections(MarvelCharacterListCollectionViewSection.allCases)
     }
 }

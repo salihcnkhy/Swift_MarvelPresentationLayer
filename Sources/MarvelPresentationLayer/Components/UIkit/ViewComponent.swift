@@ -8,31 +8,28 @@
 import UIKit
 import Combine
 
-open class ViewComponent<ComponentModel: Hashable, ComponentPresenter>: UIView {
-    var modelSubject: CurrentValueSubject<ComponentModel?, Never> = .init(nil)
+open class ViewComponent<ComponentState, ComponentPresenter>: UIView {
+    var stateSubject = PassthroughSubject<ComponentState, Never>()
     
     var presenter: ComponentPresenter
-    private var cancellable: AnyCancellable? = nil
+    private var anyCancellables = Set<AnyCancellable>()
     
-    init(presenter: ComponentPresenter, model: ComponentModel? = nil, frame: CGRect = .zero) {
+    init(presenter: ComponentPresenter, state: ComponentState? = nil, frame: CGRect = .zero) {
         self.presenter = presenter
         super.init(frame: frame)
-        
-        cancellable = self.modelSubject.sink { [weak self] model in
-            guard let model = model else {
-                return
-            }
-            
-            self?.updateView(with: model)
-        }
-        
-        self.modelSubject.send(model)
-        
         setupView()
+        
+        stateSubject.sink { [weak self] state in
+            self?.updateView(with: state)
+        }.store(in: &anyCancellables)
+        
+        if let state = state {
+            self.stateSubject.send(state)
+        }
     }
     
     open func setupView() { }
-    open func updateView(with model: ComponentModel) { }
+    open func updateView(with state: ComponentState) { }
     
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
