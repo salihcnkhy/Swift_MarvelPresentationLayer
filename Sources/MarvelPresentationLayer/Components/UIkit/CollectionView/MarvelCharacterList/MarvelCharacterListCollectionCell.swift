@@ -34,6 +34,7 @@ final class MarvelCharacterListCollectionCell: UICollectionViewCell, ReusableCel
         let temp = UILabel()
         temp.translatesAutoresizingMaskIntoConstraints = false
         temp.numberOfLines = 1
+        temp.textColor = .black
         temp.lineBreakMode = .byTruncatingTail
         return temp
     }()
@@ -53,7 +54,8 @@ final class MarvelCharacterListCollectionCell: UICollectionViewCell, ReusableCel
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     
     func setViews() {
-        contentView.backgroundColor = .green
+        contentView.backgroundColor = .quaternaryLabel
+        contentView.layer.masksToBounds = true
         contentView.addBorder(with: 1, and: .quaternaryLabel, round: 6)
         
         characterImage.fill(in: contentView)
@@ -63,7 +65,7 @@ final class MarvelCharacterListCollectionCell: UICollectionViewCell, ReusableCel
         bannerContainer.addSubview(favoriteIcon)
         
         bannerContainer.activate(constraints: [
-            .height(constantRelation: .equalConstant(60)),
+            .height(constantRelation: .equalConstant(45)),
             .bottom(relation: .equal(attribute: .bottom(ofView: characterImage))),
             .leading(relation: .equal(attribute: .leading(ofView: characterImage))),
             .trailing(relation: .equal(attribute: .trailing(ofView: characterImage))),

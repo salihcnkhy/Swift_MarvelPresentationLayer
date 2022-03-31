@@ -20,7 +20,6 @@ public final class MarvelCharacterListCollectionView: CollectionView<MarvelChara
     
     public override func cellProvider(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ itemIdentifier: MarvelCharacterData) -> UICollectionViewCell? {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MarvelCharacterListCollectionCell.reusableID, for: indexPath) as! MarvelCharacterListCollectionCell
-        print(indexPath.row)
         cell.configure(with: model[indexPath.row], and: networkImageUseCase)
         return cell
     }

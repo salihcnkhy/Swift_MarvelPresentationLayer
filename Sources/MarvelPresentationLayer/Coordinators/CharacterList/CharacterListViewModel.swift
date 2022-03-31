@@ -12,7 +12,8 @@ import SwiftUI
 
 public protocol CharacterListViewModelProtocol {
     func subscribeCharacterList(with closure: @escaping ([MarvelCharacterData]) -> Void)
-    func getCharacterList(with searchText: String?, resetOffset: Bool)
+    func getCharacterList(resetOffset: Bool)
+    func setSearchText(with text: String?)
     
     func getNetworkImageUseCase() -> NetworkImageUseCaseProtocol
 }
@@ -21,8 +22,9 @@ public final class CharacterListViewModel: BaseViewModel, CharacterListViewModel
     
     private var anyCancellables = Set<AnyCancellable>()
     
-    private let fetchLimitCount = 10
+    private let fetchLimitCount = 20
     private var characterListOffset = 0
+    private var lastSearchText: String? = nil
     
     @Published private var marvelCharacterList = [MarvelCharacterData]()
     
@@ -38,22 +40,25 @@ public final class CharacterListViewModel: BaseViewModel, CharacterListViewModel
         $marvelCharacterList.sink(receiveValue: closure).store(in: &anyCancellables)
     }
     
-    public func getCharacterList(with searchText: String?, resetOffset: Bool) {
+    public func getCharacterList(resetOffset: Bool) {
         if resetOffset {
             characterListOffset = 0
         }
-        
-        print(characterListOffset)
         characterListUseCase
-            .publish(request: .init(offset: characterListOffset, limit: fetchLimitCount, nameStartsWith: searchText))
+            .publish(request: .init(offset: characterListOffset, limit: fetchLimitCount, nameStartsWith: lastSearchText))
             .format(CharacterListFormatter())
-            .sink { completion in
-                print(completion)
-            } receiveValue: { [weak self] model in
+            .handle(receiveValue: { [weak self] model in
                 guard let self = self else { return }
                 self.characterListOffset += self.fetchLimitCount
                 self.marvelCharacterList = model
-            }.store(in: &anyCancellables)
+            }, receiveError: { error in
+                print(error)
+            })
+            .store(in: &anyCancellables)
+    }
+    
+    public func setSearchText(with text: String?) {
+        lastSearchText = text
     }
     
     public func getNetworkImageUseCase() -> NetworkImageUseCaseProtocol {
@@ -72,16 +77,28 @@ extension Publisher {
     where Output == ResponseFormatterType.Input, Formatted == ResponseFormatterType.Output {
         self.compactMap { formatter.format($0) }.eraseToAnyPublisher()
     }
+    
+    func handle(receiveValue: @escaping (Output) -> Void, receiveError: ((Failure) -> Void)? = nil) -> AnyCancellable {
+        self.sink { completion in
+            switch completion {
+                case .failure(let error):
+                    receiveError?(error)
+                default:
+                    break
+            }
+        } receiveValue: { output in
+            receiveValue(output)
+        }
+    }
 }
 
 
 struct CharacterListFormatter: ResponseFormatter {
     func format(_ input: MarvelCharacterListResponse) -> [MarvelCharacterData] {
-        input.data.results.compactMap {
+        input.data.results.compactMap { $0 }
+        .map {
             let thumbnail = $0.thumbnail
             // TODO: for now, when image not available do not send them to UICollectionViewCells. Later when image is not available show default image
-            guard thumbnail.thumbnailExtension != .gif
-            else { return nil }
             
             return MarvelCharacterData(
                 id: "\($0.id)",

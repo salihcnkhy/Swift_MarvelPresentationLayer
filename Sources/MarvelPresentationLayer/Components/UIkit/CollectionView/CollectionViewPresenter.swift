@@ -7,7 +7,9 @@
 
 import UIKit
 
-open class CollectionViewPresenter {
+open class CollectionViewPresenter<SectionType: CaseIterable & Hashable> {
+    typealias Section = SectionType
+
     init(itemHeight: CGFloat = 250, rowSpacing: CGFloat = 8, columnSpacing: CGFloat = 4, columnCount: Int = 2, layoutConfig: UICollectionViewCompositionalLayoutConfiguration = .init()) {
         self.layoutConfig = layoutConfig
         self.columnCount = columnCount
@@ -18,12 +20,14 @@ open class CollectionViewPresenter {
     public var columnCount: Int
     public var itemHeight: CGFloat
     
-    open func createSection() -> NSCollectionLayoutSection {
+    open func createSection(with sectionIndex: Int, and environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
         fatalError()
     }
     
     func createCompositionalLayout() -> UICollectionViewCompositionalLayout {
-        let layout = UICollectionViewCompositionalLayout(section: createSection(), configuration: layoutConfig)
+        let layout = UICollectionViewCompositionalLayout(sectionProvider: { sectionIndex, environment in
+            self.createSection(with: sectionIndex, and: environment)
+        }, configuration: layoutConfig)
         return layout
     }
 }

@@ -48,6 +48,7 @@ public final class NetworkImageContainer: ViewComponent<NetworkImageState, Netwo
     
     private lazy var loadingIndicatorView: UIActivityIndicatorView = {
         let temp = UIActivityIndicatorView(style: .medium)
+        temp.color = .white
         temp.translatesAutoresizingMaskIntoConstraints = false
         return temp
     }()
@@ -66,24 +67,26 @@ public final class NetworkImageContainer: ViewComponent<NetworkImageState, Netwo
     
     public override func updateView(with state: NetworkImageState) {
         overlayView.subviews.forEach { $0.removeFromSuperview() }
-        
         switch state {
             case .setImage(let image):
-                self.imageView.image = image
+                imageView.image = image
             case .load(let networkImageContainerData):
                 loadImage(networkImageContainerData)
             case .onErrorView:
                 setErrorView()
             case .onLoadingView:
-                setErrorView()
+                setLoadingView()
         }
     }
     
     private func setLoadingView() {
+        imageView.image = nil
+        overlayView.addSubview(loadingIndicatorView)
         loadingIndicatorView.activate(constraints: [
             .centerX(relation: .equal(attribute: .centerX(ofView: overlayView))),
-            .centerY(relation: .equal(attribute: .centerY(ofView: overlayView))),
+            .centerY(relation: .equal(attribute: .centerY(ofView: overlayView), -45 * 0.5)),
         ])
+        loadingIndicatorView.startAnimating()
     }
     
     private func setErrorView() {
@@ -91,39 +94,6 @@ public final class NetworkImageContainer: ViewComponent<NetworkImageState, Netwo
     }
     
     private func loadImage(_ model: NetworkImageContainerData) {
-        
-//        if let cacheImage = model.getFromCache() {
-//            print("loaded from cache \(model.id)")
-//            stateSubject.send(.setImage(cacheImage))
-//            return
-//        }
-//
-//        stateSubject.send(.onLoadingView)
-//
-//        guard let url = URL(string: model.url) else {
-//            stateSubject.send(.onErrorView)
-//            return
-//        }
-//
-//        cancellable = URLSession.shared.dataTaskPublisher(for: url)
-//            .map { UIImage(data: $0.data) }
-//            .sink { [weak self] completion in
-//                switch completion {
-//                    case .failure(_):
-//                        self?.stateSubject.send(.onErrorView)
-//                    default:
-//                        break
-//                }
-//            } receiveValue: { [weak self] image in
-//                guard let image = image else {
-//                    self?.stateSubject.send(.onErrorView)
-//                    return
-//                }
-//                print("loaded from url \(model.id)")
-//                model.setToCache(image)
-//                self?.stateSubject.send(.setImage(image))
-//            }
-//
         stateSubject.send(.onLoadingView)
         
         cancellable = networkImageUseCase
@@ -143,8 +113,4 @@ public final class NetworkImageContainer: ViewComponent<NetworkImageState, Netwo
                 self?.stateSubject.send(.setImage(image))
             }
     }
-}
-
-class ImageCacheProvider {
-    
 }

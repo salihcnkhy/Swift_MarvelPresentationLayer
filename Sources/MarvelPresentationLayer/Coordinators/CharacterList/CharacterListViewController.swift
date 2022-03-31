@@ -35,47 +35,104 @@ public final class CharacterListViewController: BaseViewController<CharacterList
         return temp
     }()
     
-    var cancellables = Set<AnyCancellable>()
+    private var cancellables = Set<AnyCancellable>()
     
     public override func startViewController() {
-        setViews()
+        overrideUserInterfaceStyle = .light
+        edgesForExtendedLayout = []
         view.backgroundColor = .white
+        let apperance = UINavigationBarAppearance()
+        apperance.configureWithOpaqueBackground()
+        apperance.backgroundColor = .white
+        apperance.titleTextAttributes = [.foregroundColor: UIColor.black]
+        apperance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
+        
+        navigationController?.navigationBar.standardAppearance = apperance
+        navigationController?.navigationBar.scrollEdgeAppearance = apperance
+        navigationController?.navigationBar.prefersLargeTitles = true
+        title = "Character List"
+        
+        setViews()
         bindComponents()
         bindViewModel()
-        getCharacterList()
+        getCharacterList(resetOffset: true)
     }
     
     private func setViews() {
-        mainStackView.fill(in: view, with: .init(top: 50, left: 0, bottom: 0, right: 0 ))
+        mainStackView.fill(in: view, with: .init(top: 0, left: 10, bottom: 50, right: 10))
     }
     
     private func bindComponents() {
-        searchBar.stateSubject
-            .filter { $0.old != $0.new }
-            .debounce(for: 1, scheduler: RunLoop.main)
-            .sink { [weak self] oldText, newText in
-                guard let new = newText else { return }
-                if new.isEmpty {
-                    self?.characterCollectionView.stateSubject.send(.onDeleteAll)
-                    self?.getCharacterList(resetOffset: true)
-                } else if new.count > 1 {
-                    self?.characterCollectionView.stateSubject.send(.onDeleteAll)
-                    self?.getCharacterList(newText, resetOffset: true)
-                }
-            }.store(in: &cancellables)
+        bindSearchBar()
+        bindCollectionView()
     }
-    
+}
+
+// MARK: - ViewModel Bindings -
+
+extension CharacterListViewController {
     private func bindViewModel() {
         viewModel.subscribeCharacterList { [weak self] model in
             self?.handleCharacterListResponse(model)
         }
     }
     
-    private func getCharacterList(_ startsWith: String? = nil, resetOffset: Bool = false) {
-        viewModel.getCharacterList(with: startsWith, resetOffset: resetOffset)
+    private func getCharacterList(resetOffset: Bool = false) {
+        if resetOffset {
+            characterCollectionView.stateSubject.send(.onWaitingData)
+        }
+        viewModel.getCharacterList(resetOffset: resetOffset)
     }
     
     private func handleCharacterListResponse(_ model: [MarvelCharacterData]) {
-        characterCollectionView.stateSubject.send(.onAppendItems(model, .allList))
+        if !model.isEmpty {
+            characterCollectionView.stateSubject.send(.onAppendItems(model, .allList))
+        } else {
+            characterCollectionView.stateSubject.send(.noMoreDataForPagination)
+        }
+    }
+}
+
+// MARK: - Component Bindings -
+
+// MARK: - SearchBar functions
+extension CharacterListViewController {
+    private func bindSearchBar() {
+        searchBar.stateSubject
+            .filter { $0.old != $0.new }
+            .debounce(for: 1, scheduler: RunLoop.main)
+            .sink { [weak self] oldText, newText in
+                guard let new = newText else { return }
+                self?.handleSearchedText(with: new)
+            }.store(in: &cancellables)
+    }
+    
+    private func handleSearchedText(with newText: String) {
+        if newText.isEmpty {
+            characterCollectionView.stateSubject.send(.onDeleteAll)
+            characterCollectionView.stateSubject.send(.empty)
+            viewModel.setSearchText(with: nil)
+            getCharacterList(resetOffset: true)
+        } else if newText.count > 1 {
+            characterCollectionView.stateSubject.send(.onDeleteAll)
+            characterCollectionView.stateSubject.send(.empty)
+            viewModel.setSearchText(with: newText)
+            getCharacterList(resetOffset: true)
+        }
+    }
+}
+
+// MARK: - CollectionView functions
+extension CharacterListViewController {
+    private func bindCollectionView() {
+        characterCollectionView.eventSubject.sink { [weak self] event in
+            switch event {
+                case .onItemSelection(let item):
+                    print(item)
+                case .readyForPagination:
+                    self?.characterCollectionView.stateSubject.send(.onWaitingPaginationData)
+                    self?.getCharacterList()
+            }
+        }.store(in: &cancellables)
     }
 }

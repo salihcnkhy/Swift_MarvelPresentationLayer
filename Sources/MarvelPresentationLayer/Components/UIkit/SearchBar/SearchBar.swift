@@ -13,7 +13,7 @@ public struct SearchBarPresenter { }
 
 public enum SearchBarEvent { }
 
-final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarEvent, SearchBarPresenter> {
+final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarEvent, SearchBarPresenter>, UITextFieldDelegate {
     
     private var cancelables = Set<AnyCancellable>()
     private var lastTextOfSearchBar: String? = nil
@@ -24,10 +24,15 @@ final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarEven
         return temp
     }()
     
-    private var searchField: UITextField = {
-        let temp = UITextField()
-        temp.backgroundColor = .green
+    private var searchField: UISearchTextField = {
+        let temp = UISearchTextField()
+        temp.backgroundColor = .clear
         temp.translatesAutoresizingMaskIntoConstraints = false
+        temp.attributedPlaceholder = .init(string: "Search...", attributes: [.font: UIFont.systemFont(ofSize: 15),
+                                                                             .foregroundColor: UIColor.quaternaryLabel])
+        temp.isUserInteractionEnabled = true
+        temp.borderStyle = .roundedRect
+        temp.returnKeyType = .done
         return temp
     }()
     
@@ -39,26 +44,24 @@ final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarEven
     }()
     
     override func setupView() {
-        backgroundColor = .blue
         self.activate(constraints: [
-            .height(constantRelation: .equalConstant(80))
+            .height(constantRelation: .equalConstant(70))
         ])
         
         container.fill(in: self)
-        
         container.addSubview(searchField)
         container.addSubview(filterIcon)
         
+        searchField.delegate = self
         searchField.activate(constraints: [
-            .top(relation: .equal(attribute: .top(ofView: container))),
-            .bottom(relation: .equal(attribute: .bottom(ofView: container))),
+            .centerY(relation: .equal(attribute: .centerY(ofView: container))),
             .leading(relation: .equal(attribute: .leading(ofView: container))),
             .trailing(relation: .greaterThan(attribute: .leading(ofView: filterIcon), -10))
         ])
         
         filterIcon.activate(constraints: [
             .centerY(relation: .equal(attribute: .centerY(ofView: container))),
-            .trailing(relation: .equal(attribute: .trailing(ofView: container), -10)),
+            .trailing(relation: .equal(attribute: .trailing(ofView: container))),
             .width(constantRelation: .equalConstant(25)),
             .height(constantRelation: .equalConstant(25))
         ])
@@ -71,5 +74,9 @@ final class SearchBar: ViewComponent<(old: String?, new: String?), SearchBarEven
                 self.stateSubject.send((old: self.lastTextOfSearchBar, new: text))
                 self.lastTextOfSearchBar = text
             }.store(in: &cancelables)
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
     }
 }
