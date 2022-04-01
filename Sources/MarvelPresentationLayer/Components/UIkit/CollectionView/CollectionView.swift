@@ -43,7 +43,7 @@ open class CollectionView: ViewComponent<CollectionViewStateProtocol, Collection
         mainStackView.fill(in: self)
     }
     
-    // TODO: Think more affective way to handle states. Maybe State could be responsible of handling not there ??
+    // TODO: Think more effective way to handle states. Maybe State could be responsible of handling not there ??
     open override func updateView(with state: CollectionViewStateProtocol) {
         if let state = state as? CollectionViewStateOnAppendItem {
             appendItems(state.items, to: state.section)
