@@ -79,16 +79,16 @@ extension CharacterListViewController {
     
     private func getCharacterList(resetOffset: Bool = false) {
         if resetOffset {
-            characterCollectionView.stateSubject.send(.onWaitingData)
+            characterCollectionView.stateSubject.send(MarvelCharacterCollectionViewStateOnWaitingData())
         }
         viewModel.getCharacterList(resetOffset: resetOffset)
     }
     
     private func handleCharacterListResponse(_ model: [MarvelCharacterData]) {
         if !model.isEmpty {
-            characterCollectionView.stateSubject.send(.onAppendItems(model, .allList))
+            characterCollectionView.stateSubject.send(CollectionViewStateOnAppendItem(items: model, section: MarvelCharacterListCollectionViewSection.allList))
         } else {
-            characterCollectionView.stateSubject.send(.noMoreDataForPagination)
+            characterCollectionView.stateSubject.send(MarvelCharacterCollectionViewStateOnNoMoreDataForPagination())
         }
     }
 }
@@ -109,13 +109,11 @@ extension CharacterListViewController {
     
     private func handleSearchedText(with newText: String) {
         if newText.isEmpty {
-            characterCollectionView.stateSubject.send(.onDeleteAll)
-            characterCollectionView.stateSubject.send(.empty)
+            characterCollectionView.stateSubject.send(CollectionViewStateOnDeleteAll())
             viewModel.setSearchText(with: nil)
             getCharacterList(resetOffset: true)
         } else if newText.count > 1 {
-            characterCollectionView.stateSubject.send(.onDeleteAll)
-            characterCollectionView.stateSubject.send(.empty)
+            characterCollectionView.stateSubject.send(CollectionViewStateOnDeleteAll())
             viewModel.setSearchText(with: newText)
             getCharacterList(resetOffset: true)
         }
@@ -126,12 +124,11 @@ extension CharacterListViewController {
 extension CharacterListViewController {
     private func bindCollectionView() {
         characterCollectionView.eventSubject.sink { [weak self] event in
-            switch event {
-                case .onItemSelection(let item):
-                    print(item)
-                case .readyForPagination:
-                    self?.characterCollectionView.stateSubject.send(.onWaitingPaginationData)
-                    self?.getCharacterList()
+            if let event = event as? CollectionViewEventOnItemSelection {
+                print(event.item)
+            } else if let _ = event as? MarvelCharacterCollectionViewEventStartPagination {
+                self?.characterCollectionView.stateSubject.send(MarvelCharacterCollectionViewStateOnWaitingPaginationData())
+                self?.getCharacterList()
             }
         }.store(in: &cancellables)
     }

@@ -7,8 +7,7 @@
 
 import UIKit
 
-open class CollectionViewPresenter<SectionType: CaseIterable & Hashable> {
-    typealias Section = SectionType
+open class CollectionViewPresenter {
 
     init(itemHeight: CGFloat = 250, rowSpacing: CGFloat = 8, columnSpacing: CGFloat = 4, columnCount: Int = 2, layoutConfig: UICollectionViewCompositionalLayoutConfiguration = .init()) {
         self.layoutConfig = layoutConfig

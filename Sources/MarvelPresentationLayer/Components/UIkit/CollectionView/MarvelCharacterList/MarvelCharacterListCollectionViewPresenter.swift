@@ -7,9 +7,9 @@
 
 import UIKit
 
-public final class MarvelCharacterListCollectionViewPresenter: CollectionViewPresenter<MarvelCharacterListCollectionViewSection> {
+public final class MarvelCharacterListCollectionViewPresenter: CollectionViewPresenter {
     public override func createSection(with sectionIndex: Int, and environment: NSCollectionLayoutEnvironment) -> NSCollectionLayoutSection {
-        let section = Section.allCases[sectionIndex]
+        let section = MarvelCharacterListCollectionViewSection.allCases[sectionIndex]
         switch section {
             case .allList:
                 return generateAllListSection()
