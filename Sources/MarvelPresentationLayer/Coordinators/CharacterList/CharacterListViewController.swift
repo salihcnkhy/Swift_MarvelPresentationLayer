@@ -125,11 +125,22 @@ extension CharacterListViewController {
     private func bindCollectionView() {
         characterCollectionView.eventSubject.sink { [weak self] event in
             if let event = event as? CollectionViewEventOnItemSelection {
-                print(event.item)
+                if let item = event.item as? MarvelCharacterData {
+                    self?.onCollectionViewItemSelection(item)
+                }
             } else if let _ = event as? MarvelCharacterCollectionViewEventStartPagination {
-                self?.characterCollectionView.stateSubject.send(MarvelCharacterCollectionViewStateOnWaitingPaginationData())
-                self?.getCharacterList()
+                self?.onCollectionViewStartPagination()
             }
         }.store(in: &cancellables)
+    }
+    
+    private func onCollectionViewItemSelection(_ item: MarvelCharacterData) {
+        router.presentCharacterDetail(with: item)
+        print("http://i.annihil.us/u/prod/marvel/i/mg/\(item.image.createPathString())")
+    }
+    
+    private func onCollectionViewStartPagination() {
+        characterCollectionView.stateSubject.send(MarvelCharacterCollectionViewStateOnWaitingPaginationData())
+        getCharacterList()
     }
 }

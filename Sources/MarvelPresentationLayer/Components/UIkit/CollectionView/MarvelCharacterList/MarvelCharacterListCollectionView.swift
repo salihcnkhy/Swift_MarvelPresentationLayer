@@ -10,7 +10,7 @@ import UIKit
 import Combine
 import MarvelDomainLayer
 
-public final class MarvelCharacterListCollectionView: CollectionView {
+public final class MarvelCharacterListCollectionView: CollectionView<MarvelCharacterData> {
     
     var networkImageUseCase: NetworkImageUseCaseProtocol!
     private var paginationOnProcess = false
@@ -33,18 +33,16 @@ public final class MarvelCharacterListCollectionView: CollectionView {
         collectionView.register(MarvelCharacterListCollectionCell.self, forCellWithReuseIdentifier: MarvelCharacterListCollectionCell.reusableID)
     }
     
-    public override func cellProvider(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ itemIdentifier: AnyHashable) -> UICollectionViewCell? {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MarvelCharacterListCollectionCell.reusableID, for: indexPath) as? MarvelCharacterListCollectionCell,
-              let item = model[indexPath.row] as? MarvelCharacterData
-        else { return nil}
+    public override func cellProvider(_ collectionView: UICollectionView, _ indexPath: IndexPath, _ itemIdentifier: MarvelCharacterData) -> UICollectionViewCell? {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MarvelCharacterListCollectionCell.reusableID, for: indexPath) as? MarvelCharacterListCollectionCell else { return nil}
         
-        cell.configure(with: item, and: networkImageUseCase)
+        cell.configure(with: model[indexPath.row], and: networkImageUseCase)
         return cell
     }
     
     public override func updateView(with state: CollectionViewStateProtocol) {
         super.updateView(with: state)
-        if state is CollectionViewStateOnAppendItem {
+        if state is CollectionViewStateOnAppendItem<MarvelCharacterData> {
             hideWaitingDataLoadingView()
             hidePaginationLoadingView()
         } else if state is MarvelCharacterCollectionViewStateOnWaitingData {
@@ -80,7 +78,7 @@ public final class MarvelCharacterListCollectionView: CollectionView {
         footerLoadingIndicatorView.removeFromSuperview()
     }
     
-    public func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+    public override func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         if indexPath.row == model.count - 1, !paginationOnProcess {
             eventSubject.send(MarvelCharacterCollectionViewEventStartPagination())
         }

@@ -17,6 +17,7 @@ let package = Package(
         .package(url: "https://github.com/salihcnkhy/Swiftlities.git", .branch("master")),
         .package(url: "https://github.com/salihcnkhy/MVVMC_PresentationLayerBase.git", .branch("master")),
         .package(url: "https://github.com/salihcnkhy/Swift_MarvelDomainLayer.git", .branch("master")),
+        .package(url: "https://github.com/Swinject/Swinject.git", .exact(.init(stringLiteral: "2.8.1"))),
         
     ],
     targets: [
@@ -28,11 +29,13 @@ let package = Package(
                 .product(name: "PresentationLayerBase", package: "MVVMC_PresentationLayerBase"),
                 .product(name: "MarvelDomainLayer", package: "Swift_MarvelDomainLayer"),
                 .product(name: "Swiftlities", package: "Swiftlities")
+                .product(name: "Swinject", package: "Swinject"),
             ]),
         .testTarget(
             name: "MarvelPresentationLayerTests",
             dependencies: [
                            "MarvelPresentationLayer",
+                           "Swinject",
                            .product(name: "PresentationLayerBase", package: "MVVMC_PresentationLayerBase"),
                            .product(name: "MarvelDomainLayer", package: "Swift_MarvelDomainLayer"),
                            .product(name: "Swiftlities", package: "Swiftlities")]),

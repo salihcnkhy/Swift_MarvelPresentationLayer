@@ -7,6 +7,12 @@
 
 import PresentationLayerBase
 
-public protocol CharacterListRouterProtocol { }
+public protocol CharacterListRouterProtocol {
+    func presentCharacterDetail(with detailModel: MarvelCharacterData)
+}
 
-public final class CharacterListRouter: BaseRouter, CharacterListRouterProtocol { }
+public final class CharacterListRouter: BaseRouter, CharacterListRouterProtocol {
+    public func presentCharacterDetail(with detailModel: MarvelCharacterData) {
+        present(with: MarvelCoordinator.characterDetail.coordinator, presentationStyle: .popover, transitionStyle: .crossDissolve)
+    }
+}

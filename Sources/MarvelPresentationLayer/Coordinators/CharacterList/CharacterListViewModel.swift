@@ -46,6 +46,9 @@ public final class CharacterListViewModel: BaseViewModel, CharacterListViewModel
         }
         characterListUseCase
             .publish(request: .init(offset: characterListOffset, limit: fetchLimitCount, nameStartsWith: lastSearchText))
+            .handleEvents(receiveOutput: { res in
+                print(res.data.results.first)
+            })
             .format(CharacterListFormatter())
             .handle(receiveValue: { [weak self] model in
                 guard let self = self else { return }

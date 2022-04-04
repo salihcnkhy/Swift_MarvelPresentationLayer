@@ -7,9 +7,8 @@
 
 import UIKit
 
-open class CollectionView: ViewComponent<CollectionViewStateProtocol, CollectionViewEventProtocol, CollectionViewPresenter>, UICollectionViewDelegate {
+open class CollectionView<Item: Hashable>: ViewComponent<CollectionViewStateProtocol, CollectionViewEventProtocol, CollectionViewPresenter>, UICollectionViewDelegate {
     public typealias Section = AnyHashable
-    public typealias Item = AnyHashable
     
     public var model: [Item] = []
     
@@ -19,8 +18,7 @@ open class CollectionView: ViewComponent<CollectionViewStateProtocol, Collection
     lazy var collectionView: UICollectionView = {
         let temp = UICollectionView(frame: .zero, collectionViewLayout: presenter.createCompositionalLayout())
         temp.translatesAutoresizingMaskIntoConstraints = false
-        temp.delegate = self
-        backgroundColor = .clear
+        temp.backgroundColor = .clear
         return temp
     }()
     
@@ -37,6 +35,7 @@ open class CollectionView: ViewComponent<CollectionViewStateProtocol, Collection
     
     public override func setupView() {
         backgroundColor = .clear
+        collectionView.delegate = self
         registerCells(collectionView)
         createDataSource()
         addSections()
@@ -45,9 +44,9 @@ open class CollectionView: ViewComponent<CollectionViewStateProtocol, Collection
     
     // TODO: Think more effective way to handle states. Maybe State could be responsible of handling not there ??
     open override func updateView(with state: CollectionViewStateProtocol) {
-        if let state = state as? CollectionViewStateOnAppendItem {
+        if let state = state as? CollectionViewStateOnAppendItem<Item> {
             appendItems(state.items, to: state.section)
-        } else if let state = state as? CollectionViewStateOnDeleteItem {
+        } else if let state = state as? CollectionViewStateOnDeleteItem<Item> {
             deleteItems(state.items)
         } else if let _ = state as? CollectionViewStateOnDeleteAll {
             deleteAll()
@@ -97,5 +96,9 @@ open class CollectionView: ViewComponent<CollectionViewStateProtocol, Collection
     public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard let item = dataSource?.itemIdentifier(for: indexPath) else { return }
         eventSubject.send(CollectionViewEventOnItemSelection(item: item))
+    }
+    
+    open func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        
     }
 }
