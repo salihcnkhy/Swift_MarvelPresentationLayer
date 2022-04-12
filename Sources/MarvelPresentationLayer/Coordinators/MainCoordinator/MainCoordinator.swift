@@ -16,7 +16,6 @@ public final class MainCoordinator: BaseCoordinator<MainViewModelProtocol, MainR
         let navigationViewController = UINavigationController(rootViewController: viewController!)
         window.rootViewController = navigationViewController
         window.makeKeyAndVisible()
-        self.navigationController = navigationViewController
     }
     
     public override func start() {

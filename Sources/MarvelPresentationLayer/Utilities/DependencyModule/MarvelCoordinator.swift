@@ -14,12 +14,18 @@ public protocol CoordinatorIdentifier {
 
 public enum MarvelCoordinator: CoordinatorIdentifier, AssemblerResolverProtocol {
     
+    case app
+    case tabBar
     case characterList
     case characterDetail
     case comicsList
     
     public var coordinator: CoordinatorProtocol {
         switch self {
+            case .app:
+                return generateCoordinator(AppCoordinator.self)
+            case .tabBar:
+                return generateCoordinator(MainCoordinator.self)
             case .characterList:
                 return generateCoordinator(CharacterListCoordinator.self)
             case .characterDetail:

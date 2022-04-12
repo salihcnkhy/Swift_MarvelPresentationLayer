@@ -26,12 +26,10 @@ public final class MainRouter: BaseRouter, MainRouterProtocol {
         let characterListNavigationController = UINavigationController(rootViewController: characterListCoordinator.viewController!)
         characterListNavigationController.tabBarItem.selectedImage = UIImage(systemName: "square.and.arrow.up")
         characterListNavigationController.tabBarItem.image = UIImage(systemName: "square.and.arrow.up.fill")
-        characterListCoordinator.navigationController = characterListNavigationController
         
         let comicsListNavigationController = UINavigationController(rootViewController: comicsListCoordinator.viewController!)
         comicsListNavigationController.tabBarItem.selectedImage = UIImage(systemName: "square.and.arrow.up")
         comicsListNavigationController.tabBarItem.image = UIImage(systemName: "square.and.arrow.up.fill")
-        comicsListCoordinator.navigationController = comicsListNavigationController
         
         return [
             characterListNavigationController,
